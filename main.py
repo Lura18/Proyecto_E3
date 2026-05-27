@@ -15,8 +15,8 @@ app.add_middleware(
 )
 
 # ─── Conexión MongoDB ──────────────────────────────────
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://ISIS2304E28202610:KUYeUnb7wEgC@157.253.236.88:8087")
-client      = MongoClient(MONGO_URI)
+#MONGO_URI = os.getenv("MONGO_URI", "mongodb://ISIS2304E28202610:KUYeUnb7wEgC@157.253.236.88:8087")
+client = MongoClient(os.environ["MONGO_URI"])
 db          = client["ISIS2304E28202610"]
 reviews_col = db["reviews"]
 votes_col   = db["votes_reviews"]
