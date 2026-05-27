@@ -300,17 +300,33 @@ def rfc2(hotel_id: int, anio: int):
 # ══════════════════════════════════════════════════════
 @app.get("/rfc3")
 def rfc3(ciudad: str):
+    hoteles_ciudad = {
+        "Armenia":      [19],
+        "Barranquilla": [12, 13],
+        "Bogotá":       [1, 2, 3, 16],
+        "Cali":         [9, 10, 11],
+        "Cartagena":    [7, 8],
+        "Ibagué":       [17],
+        "Manizales":    [18],
+        "Medellín":     [4, 5, 6],
+        "Pereira":      [15],
+        "Santa Marta":  [14]
+    }
+
+    hotel_ids = hoteles_ciudad.get(ciudad.strip(), [])
+
+    if not hotel_ids:
+        return {"hoteles": [], "promedio_ciudad": 0}
+
     pipeline = [
-        {"$match": {"estado": "publicada"}},
+        {"$match": {"estado": "publicada", "hotel_id": {"$in": hotel_ids}}},
         {
             "$group": {
                 "_id": "$hotel_id",
                 "promedio":      {"$avg": "$calificacion"},
                 "total_resenas": {"$sum": 1},
                 "con_respuesta": {
-                    "$sum": {
-                        "$cond": [{"$ne": ["$respuesta_admin", None]}, 1, 0]
-                    }
+                    "$sum": {"$cond": [{"$ne": ["$respuesta_admin", None]}, 1, 0]}
                 },
                 "destacadas": {
                     "$sum": {"$cond": ["$destacada", 1, 0]}
@@ -320,22 +336,20 @@ def rfc3(ciudad: str):
         {
             "$project": {
                 "_id": 0,
-                "hotel_id":        "$_id",
-                "promedio":        1,
-                "total_resenas":   1,
+                "hotel_id": "$_id",
+                "promedio": 1,
+                "total_resenas": 1,
                 "pct_con_respuesta": {
                     "$round": [
                         {"$multiply": [
-                            {"$divide": ["$con_respuesta", "$total_resenas"]},
-                            100
+                            {"$divide": ["$con_respuesta", "$total_resenas"]}, 100
                         ]}, 1
                     ]
                 },
                 "pct_destacadas": {
                     "$round": [
                         {"$multiply": [
-                            {"$divide": ["$destacadas", "$total_resenas"]},
-                            100
+                            {"$divide": ["$destacadas", "$total_resenas"]}, 100
                         ]}, 1
                     ]
                 }
